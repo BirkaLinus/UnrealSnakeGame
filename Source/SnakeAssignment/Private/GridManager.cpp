@@ -21,22 +21,32 @@ void AGridManager::BeginPlay()
     }
     
     //Initialize the border walls
-    for (int32 X = -1; X <= GridWidth; X++)
+    for (int32 X = 0; X < GridWidth; X++)
     {
-        for (int32 Y = -1; Y <= GridHeight; Y++)
-        {
-            bool bIsBorder = X == -1 || X == GridWidth || Y == -1 || Y == GridHeight;
-            
-            if (bIsBorder && WallClass)
-            {
-                FVector Location = GridToWorld(X, Y);
-                GetWorld()->SpawnActor<AActor>(WallClass, Location, FRotator::ZeroRotator);
-            }
-        }
+        SetCellOccupied(X, 0, true);
+        SetCellOccupied(X, GridHeight - 1, true);
+
+        FVector Top = GridToWorld(X, 0);
+        FVector Bottom = GridToWorld(X, GridHeight - 1);
+
+        GetWorld()->SpawnActor<AActor>(WallClass, Top, FRotator::ZeroRotator);
+        GetWorld()->SpawnActor<AActor>(WallClass, Bottom, FRotator::ZeroRotator);
+    }
+
+    for (int32 Y = 0; Y < GridHeight; Y++)
+    {
+        SetCellOccupied(0, Y, true);
+        SetCellOccupied(GridWidth - 1, Y, true);
+
+        FVector Left = GridToWorld(0, Y);
+        FVector Right = GridToWorld(GridWidth - 1, Y);
+
+        GetWorld()->SpawnActor<AActor>(WallClass, Left, FRotator::ZeroRotator);
+        GetWorld()->SpawnActor<AActor>(WallClass, Right, FRotator::ZeroRotator);
     }
     
     //Custom Level walls/Obstacles
-    SpawnLevelWalls();
+    SpawnLevelObstacles();
 
     // Safety check
     if (!TileClass) return;
@@ -150,19 +160,19 @@ bool AGridManager::IsInsideGrid(int32 X, int32 Y) const
     return X >= 0 && X < GridWidth && Y >= 0 && Y < GridHeight;
 }
 
-void AGridManager::SpawnLevelWalls()
+void AGridManager::SpawnLevelObstacles()
 {
-    if (!WallClass || !GetWorld()) return;
+    if (!CurrentLevel || !WallClass || !GetWorld()) return;
     
-    for (const FWallCell& Cell : WallCells)
+    const TArray<FIntPoint>& Obstacles = CurrentLevel->LevelData.ObstacleCells;
+    
+    for (const FIntPoint& Cell : Obstacles)
     {
-        //Mark the cell we choose occupied
+        //Marks the location as occupied
         SetCellOccupied(Cell.X, Cell.Y, true);
         
-        //Make it a world position
+        //Spawn the Walls/Obstacles visually
         FVector Location = GridToWorld(Cell.X, Cell.Y);
-        
-        //Spawn the actual wall/Obstacle
-        GetWorld()->SpawnActor<AActor>(WallClass, Location, FRotator::ZeroRotator); //Choose in the BP
+        GetWorld()->SpawnActor<AActor>(WallClass, Location, FRotator::ZeroRotator);
     }
 }
