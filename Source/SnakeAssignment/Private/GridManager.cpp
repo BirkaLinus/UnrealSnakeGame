@@ -20,7 +20,7 @@ void AGridManager::BeginPlay()
         Grid[i].bOccupied = false;
     }
     
-    //Initialize Walls
+    //Initialize the border walls
     for (int32 X = -1; X <= GridWidth; X++)
     {
         for (int32 Y = -1; Y <= GridHeight; Y++)
@@ -34,6 +34,9 @@ void AGridManager::BeginPlay()
             }
         }
     }
+    
+    //Custom Level walls/Obstacles
+    SpawnLevelWalls();
 
     // Safety check
     if (!TileClass) return;
@@ -51,6 +54,8 @@ void AGridManager::BeginPlay()
             );
         }
     }
+    
+    
     SpawnFood(); //Makes sure to spawn food
 }
 
@@ -75,31 +80,6 @@ FVector AGridManager::GridToWorld(int32 X, int32 Y) const
         0.f
     );
 }
-
-//FOOD
-// void AGridManager::SpawnFood()
-// {
-//     FoodPosition.X = FMath::RandRange(0, GridWidth -1);
-//     FoodPosition.Y = FMath::RandRange(0, GridHeight -1);
-//     
-//     FVector WorldPos = GridToWorld(FoodPosition.X, FoodPosition.Y);
-//     
-//     //Safety
-//     if (!FoodClass || !GetWorld())
-//     {
-//         UE_LOG(LogTemp, Error, TEXT("FoodClass not assigner or world is invalid"));
-//         return;
-//     }
-//     
-//     if (FoodActor)
-//     {
-//         FoodActor->SetActorLocation(WorldPos);
-//         return;
-//     }
-//     
-//     //First food spawn
-//     FoodActor = GetWorld()->SpawnActor<AActor>(FoodClass, WorldPos, FRotator::ZeroRotator);
-// }
 
 void AGridManager::SpawnFood()
 {
@@ -168,4 +148,21 @@ void AGridManager::SetCellOccupied(int32 X, int32 Y, bool bOccupied)
 bool AGridManager::IsInsideGrid(int32 X, int32 Y) const
 {
     return X >= 0 && X < GridWidth && Y >= 0 && Y < GridHeight;
+}
+
+void AGridManager::SpawnLevelWalls()
+{
+    if (!WallClass || !GetWorld()) return;
+    
+    for (const FWallCell& Cell : WallCells)
+    {
+        //Mark the cell we choose occupied
+        SetCellOccupied(Cell.X, Cell.Y, true);
+        
+        //Make it a world position
+        FVector Location = GridToWorld(Cell.X, Cell.Y);
+        
+        //Spawn the actual wall/Obstacle
+        GetWorld()->SpawnActor<AActor>(WallClass, Location, FRotator::ZeroRotator); //Choose in the BP
+    }
 }

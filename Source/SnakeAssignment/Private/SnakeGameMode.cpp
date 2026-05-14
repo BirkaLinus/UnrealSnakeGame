@@ -92,7 +92,6 @@ void ASnakeGameMode::GameOver()
 		1.5f, //The timer
 		false
 	);
-	//Restarting with some delay...
 }
 
 void ASnakeGameMode::RestartGame()
