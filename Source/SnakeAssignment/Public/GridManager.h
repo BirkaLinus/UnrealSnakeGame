@@ -6,6 +6,8 @@
 #include "Containers/Array.h"
 #include "Math/IntPoint.h"
 #include "GameFramework/Actor.h"
+#include "Engine/DataAsset.h"
+
 #include "GridManager.generated.h"
 
 // -------- Grid Cell Struct --------
@@ -120,6 +122,9 @@ public:
     
     //Implement different "wall-obstacles" for different levels...
     void SpawnLevelObstacles();
+    
+    UFUNCTION(BlueprintCallable, Category="Level")
+    void LoadLevel(ULevelDataAsset* NewLevel);
 
 private:
     // Array to store all grid cells

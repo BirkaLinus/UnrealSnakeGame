@@ -46,7 +46,7 @@ void AGridManager::BeginPlay()
     }
     
     //Custom Level walls/Obstacles
-    SpawnLevelObstacles();
+    //SpawnLevelObstacles();
 
     // Safety check
     if (!TileClass) return;
@@ -66,7 +66,7 @@ void AGridManager::BeginPlay()
     }
     
     
-    SpawnFood(); //Makes sure to spawn food
+    //SpawnFood(); //Makes sure to spawn food
 }
 
 // Converts grid X,Y to index in the 1D Grid array
@@ -175,4 +175,16 @@ void AGridManager::SpawnLevelObstacles()
         FVector Location = GridToWorld(Cell.X, Cell.Y);
         GetWorld()->SpawnActor<AActor>(WallClass, Location, FRotator::ZeroRotator);
     }
+}
+
+void AGridManager::LoadLevel(ULevelDataAsset* NewLevel)
+{
+    if (!NewLevel) return;
+    
+    CurrentLevel = NewLevel;
+    
+    //Clear old obstacles
+    
+    SpawnLevelObstacles();
+    SpawnFood();
 }

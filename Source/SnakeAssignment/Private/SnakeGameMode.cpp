@@ -4,6 +4,7 @@
 #include "SnakeGameMode.h"
 
 #include "SnakePawn.h"
+#include "GridManager.h"
 #include "Kismet/GameplayStatics.h"
 
 void ASnakeGameMode::SetGameState(EGameState NewState)
@@ -31,6 +32,10 @@ void ASnakeGameMode::BeginPlay()
 	Super::BeginPlay();
 	
 	SetGameState(EGameState::MainMenu);
+	
+	GridManagerRef = Cast<AGridManager>(
+	UGameplayStatics::GetActorOfClass(GetWorld(), AGridManager::StaticClass())
+);
 	
 	if (MainMenuWidgetClass)
 	{
@@ -105,5 +110,33 @@ void ASnakeGameMode::RestartGame()
 		UGameplayStatics::OpenLevel(this, FName(*CurrentLevel));
 	}
 }
+
+void ASnakeGameMode::Level1()
+{
+	if (GridManagerRef && Level1Data)
+	{
+		GridManagerRef->LoadLevel(Level1Data);
+		StartGame();
+	}
+}
+
+void ASnakeGameMode::Level2()
+{
+	if (GridManagerRef && Level2Data)
+	{
+		GridManagerRef->LoadLevel(Level2Data);
+		StartGame();
+	}
+}
+
+void ASnakeGameMode::Level3()
+{
+	if (GridManagerRef && Level3Data)
+	{
+		GridManagerRef->LoadLevel(Level3Data);
+		StartGame();
+	}
+}
+
 
 
