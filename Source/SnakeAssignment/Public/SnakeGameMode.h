@@ -40,6 +40,12 @@ public:
 	
 	void SetGameState(EGameState NewState);
 	
+	UPROPERTY(BlueprintReadWrite)
+	bool bTwoPlayers = false;
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<ASnakePawn> SnakePawnClass;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Levels")
 	ULevelDataAsset* Level1Data;
 
@@ -48,6 +54,15 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Levels")
 	ULevelDataAsset* Level3Data;
+	
+	UFUNCTION(BlueprintCallable)
+	void SetTwoPlayers(bool bEnabled)
+	{
+		bTwoPlayers = bEnabled;
+	}
+	
+	UFUNCTION(BlueprintCallable)
+	void ToggleTwoPlayers();
 	
 	UFUNCTION(BlueprintCallable, Category = "Game")
 	void Level1();

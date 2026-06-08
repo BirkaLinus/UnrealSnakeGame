@@ -56,9 +56,30 @@ void ASnakeGameMode::BeginPlay()
 	
 }
 
+void ASnakeGameMode::ToggleTwoPlayers()
+{
+	bTwoPlayers = !bTwoPlayers;
+	
+	UE_LOG(LogTemp, Warning, TEXT("TwoPlaters : %s"), bTwoPlayers ? TEXT("TRUE") : TEXT("FALSE"));
+}
+
 void ASnakeGameMode::StartGame() //REMEMBER TO FIX VOID QUITGAME AND LINK IT IN THE BP WIDGET
 {
 	SetGameState(EGameState::Playing);
+	
+	UE_LOG(LogTemp, Warning,
+	TEXT("StartGame called. bTwoPlayers = %s"),
+	bTwoPlayers ? TEXT("TRUE") : TEXT("FALSE"));
+	
+	//Check how many players
+	if (bTwoPlayers)
+	{
+		UGameplayStatics::CreatePlayer(GetWorld(), 1, true);
+	}
+	
+	UE_LOG(LogTemp, Warning,
+	TEXT("Two Players = %s"),
+	bTwoPlayers ? TEXT("TRUE") : TEXT("FALSE"));
 	
 	//Remove the MainMenu UI
 	if (CurrentWidget)
@@ -113,6 +134,8 @@ void ASnakeGameMode::RestartGame()
 
 void ASnakeGameMode::Level1()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Level1() called"));
+
 	if (GridManagerRef && Level1Data)
 	{
 		GridManagerRef->LoadLevel(Level1Data);
