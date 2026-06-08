@@ -22,6 +22,7 @@ enum class EGameState : uint8
 
 class ULevelDataAsset;
 class AGridManager;
+class ASnakePawn;
 
 UCLASS()
 class SNAKEASSIGNMENT_API ASnakeGameMode : public AGameModeBase
