@@ -13,6 +13,7 @@
 class UInputMappingContext;
 class UInputAction;
 class AGridManager;
+class ASnakeGameMode;
 
 UCLASS()
 class ASnakePawn : public APawn

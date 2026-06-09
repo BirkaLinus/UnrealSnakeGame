@@ -23,6 +23,8 @@ enum class EGameState : uint8
 class ULevelDataAsset;
 class AGridManager;
 class ASnakePawn;
+class UScoreWidget;
+
 
 UCLASS()
 class SNAKEASSIGNMENT_API ASnakeGameMode : public AGameModeBase
@@ -36,6 +38,13 @@ public:
 	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly, Category ="UI")
 	TSubclassOf<UUserWidget> MainMenuWidgetClass;
+	
+	//While Playing Score
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<UScoreWidget> ScoreWidgetClass;
+	
+	UPROPERTY(BlueprintReadOnly, Category="UI")
+	UScoreWidget* ScoreWidget = nullptr;
 	
 	virtual void BeginPlay() override;
 	
@@ -83,7 +92,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category ="Game")
 	void RestartGame();
 	
+	UFUNCTION(BlueprintCallable, Category ="Game")
+	void IncreaseScore();
+	
 private:
 	EGameState CurrentGameState;
+	
+	UPROPERTY()
 	UUserWidget* CurrentWidget;
+	
+	int Score = 0;
 };

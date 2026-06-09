@@ -3,6 +3,7 @@
 
 #include "SnakeGameMode.h"
 
+#include "ScoreWidget.h"
 #include "SnakePawn.h"
 #include "GridManager.h"
 #include "Kismet/GameplayStatics.h"
@@ -72,10 +73,15 @@ void ASnakeGameMode::StartGame() //REMEMBER TO FIX VOID QUITGAME AND LINK IT IN 
 	bTwoPlayers ? TEXT("TRUE") : TEXT("FALSE"));
 	
 	//Check how many players
-	if (bTwoPlayers)
-	{
-		UGameplayStatics::CreatePlayer(GetWorld(), 1, true);
-	}
+	
+	//---------DOESNT WORK FOR NOW-----------
+	
+	// if (bTwoPlayers)
+	// {
+	// 	UGameplayStatics::CreatePlayer(GetWorld(), 1, true);
+	// }
+	
+	//---------DOESNT WORK FOR NOW-----------
 	
 	UE_LOG(LogTemp, Warning,
 	TEXT("Two Players = %s"),
@@ -85,6 +91,36 @@ void ASnakeGameMode::StartGame() //REMEMBER TO FIX VOID QUITGAME AND LINK IT IN 
 	if (CurrentWidget)
 	{
 		CurrentWidget->RemoveFromParent();
+	}
+	
+	if (ScoreWidgetClass)
+	{
+		ScoreWidget = CreateWidget<UScoreWidget>(
+			GetWorld()->GetFirstPlayerController(),
+			ScoreWidgetClass
+		);
+		
+		UE_LOG(LogTemp, Warning, TEXT("ScoreWidget created: %s"),
+	ScoreWidget ? TEXT("YES") : TEXT("NO"));
+
+		if (ScoreWidget)
+		{
+			ScoreWidget->AddToViewport();
+			UE_LOG(LogTemp, Warning, TEXT("WIDGET ADDED"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("WIDGET FAILED TO CREATE"));
+		}
+		
+		if (!ScoreWidgetClass)
+		{
+			UE_LOG(LogTemp, Error, TEXT("ScoreWidgetClass is NULL"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("ScoreWidgetClass is VALID"));
+		}
 	}
 	
 	//Gameplay Logic instead
@@ -158,6 +194,18 @@ void ASnakeGameMode::Level3()
 	{
 		GridManagerRef->LoadLevel(Level3Data);
 		StartGame();
+	}
+}
+
+void ASnakeGameMode::IncreaseScore()
+{
+	Score++;
+
+	UE_LOG(LogTemp, Warning, TEXT("Increased Score: %d"), Score);
+
+	if (ScoreWidget)
+	{
+		ScoreWidget->SetScore(Score);
 	}
 }
 

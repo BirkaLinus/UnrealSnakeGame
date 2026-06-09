@@ -225,9 +225,23 @@ void ASnakePawn::MoveSnake()
         
         GridManager->SetCellOccupied(PreviousTail.X, PreviousTail.Y, false);
     }
-    else
+    if (bAteFood)
     {
+        UE_LOG(LogTemp, Warning, TEXT("Food eaten"));
+
         GridManager->SpawnFood();
+
+        if (ASnakeGameMode* GM =
+            Cast<ASnakeGameMode>(UGameplayStatics::GetGameMode(this)))
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Found GameMode"));
+
+            GM->IncreaseScore();
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("GameMode not found"));
+        }
     }
     
     TargetLocation = GridManager->GridToWorld(NewHead.X, NewHead.Y);
