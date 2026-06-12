@@ -43,6 +43,9 @@ ASnakePawn::ASnakePawn()
 void ASnakePawn::BeginPlay()
 {
     Super::BeginPlay();
+    
+    GridManager = Cast<AGridManager>(
+    UGameplayStatics::GetActorOfClass(GetWorld(), AGridManager::StaticClass()));
 
     UE_LOG(LogTemp, Warning, TEXT("SnakeGameMode Active"));
     
@@ -189,7 +192,13 @@ void ASnakePawn::MoveRight()
 // Movement
 
 void ASnakePawn::MoveSnake()
+{    
+    
+    if (!GridManager)
 {
+    UE_LOG(LogTemp, Error, TEXT("MoveSnake(): GridManager is NULL"));
+    return;
+}
     FIntPoint PreviousTail = SnakeBody.Last();
     
     FIntPoint NewHead = GridPosition + Direction;
@@ -251,6 +260,13 @@ void ASnakePawn::MoveSnake()
 
 void ASnakePawn::TickMovement(float DeltaTime)
 {
+    
+    if (!GridManager)
+    {
+        UE_LOG(LogTemp, Error, TEXT("TickMovement: GridManager is NULL"));
+        return;
+    }
+    
     MoveTimer += DeltaTime;
 
     if (MoveTimer >= MoveInterval)
@@ -303,6 +319,11 @@ void ASnakePawn::TickMovement(float DeltaTime)
 
 void ASnakePawn::UpdateVisuals(FIntPoint PreviousTail, bool bGrew)
 {
+    if (!GridManager)
+    {
+        UE_LOG(LogTemp, Error, TEXT("UpdateVisuals(): GridManager is NULL"));
+        return;
+    }
     
     while (SnakeSegments.Num() < SnakeBody.Num() - 1)
     {

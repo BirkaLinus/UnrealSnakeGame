@@ -33,6 +33,11 @@ class SNAKEASSIGNMENT_API ASnakeGameMode : public AGameModeBase
 	
 public:
 	
+
+	UPROPERTY()
+	ASnakePawn* Snake2;
+	
+	//Gridmanager and UI
 	UPROPERTY()
 	AGridManager* GridManagerRef; //Reference to the gridmanager...
 	
@@ -48,6 +53,7 @@ public:
 	
 	virtual void BeginPlay() override;
 	
+	//State/type of game
 	void SetGameState(EGameState NewState);
 	
 	UPROPERTY(BlueprintReadWrite)
@@ -56,6 +62,7 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ASnakePawn> SnakePawnClass;
 	
+	//Snake Level stuff
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Levels")
 	ULevelDataAsset* Level1Data;
 

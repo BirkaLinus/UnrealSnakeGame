@@ -138,6 +138,26 @@ void ASnakeGameMode::StartGame() //REMEMBER TO FIX VOID QUITGAME AND LINK IT IN 
 		Pawn->EnableGame();
 	}
 	
+	if (bTwoPlayers && SnakePawnClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Trying to spawn Snake2"));
+
+		Snake2 = GetWorld()->SpawnActor<ASnakePawn>(
+			SnakePawnClass,
+			FVector(2500.f, 0.f, 0.f),
+			FRotator::ZeroRotator
+		);
+
+		UE_LOG(LogTemp, Warning,
+			TEXT("Snake2 pointer = %s"),
+			Snake2 ? TEXT("VALID") : TEXT("NULL"));
+
+		if (Snake2)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Spawned Snake2"));
+			Snake2->EnableGame();
+		}
+	}
 }
 
 void ASnakeGameMode::GameOver()
