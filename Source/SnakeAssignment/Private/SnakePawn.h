@@ -73,6 +73,9 @@ private:
     UPROPERTY(EditAnywhere, Category = "Input")
     UInputAction* MoveRightAction;
     
+    UPROPERTY(EditAnywhere, Category = "Input")
+    UInputAction* MoveRightAction_2;
+    
     //VOIDS
     
     void Die();
@@ -80,10 +83,14 @@ private:
     void MoveSnake();
     void TickMovement(float DeltaTime);
 
+    //Player1
     void MoveUp();
     void MoveDown();
     void MoveLeft();
     void MoveRight();
+    
+    //Player2
+    void MoveRight_2();
     
     void UpdateVisuals(FIntPoint PreviousTail, bool bGrew);
     

@@ -102,6 +102,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category ="Game")
 	void IncreaseScore();
 	
+	UFUNCTION(BlueprintCallable, Category ="Game")
+	void FinalScore();
+	
 private:
 	EGameState CurrentGameState;
 	
