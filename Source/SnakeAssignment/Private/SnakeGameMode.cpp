@@ -3,6 +3,7 @@
 
 #include "SnakeGameMode.h"
 
+#include "FinalScoreWidget.h"
 #include "ScoreWidget.h"
 #include "SnakePawn.h"
 #include "GridManager.h"
@@ -57,6 +58,28 @@ void ASnakeGameMode::BeginPlay()
 	
 }
 
+void ASnakeGameMode::EnterMainMenu()
+{
+	//Resets the game
+	RestartGame();
+	SetGameState(EGameState::MainMenu);
+	
+	if (FinalScoreWidget)
+	{
+		FinalScoreWidget->RemoveFromParent();
+	}
+	
+	if (MainMenuWidgetClass)
+	{
+		CurrentWidget = CreateWidget<UUserWidget>(GetWorld(), MainMenuWidgetClass);
+		
+		if (CurrentWidget)
+		{
+			CurrentWidget->AddToViewport();
+		}
+	}
+}
+
 void ASnakeGameMode::ToggleTwoPlayers()
 {
 	bTwoPlayers = !bTwoPlayers;
@@ -91,6 +114,10 @@ void ASnakeGameMode::StartGame() //REMEMBER TO FIX VOID QUITGAME AND LINK IT IN 
 	if (CurrentWidget)
 	{
 		CurrentWidget->RemoveFromParent();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("CurrentWidget is NULL in StartGame!"));
 	}
 	
 	if (ScoreWidgetClass)
@@ -166,17 +193,27 @@ void ASnakeGameMode::StartGame() //REMEMBER TO FIX VOID QUITGAME AND LINK IT IN 
 void ASnakeGameMode::GameOver()
 {
 	SetGameState(EGameState::GameOver);
-
+	
+	
+	
 	//Restarting with some delay...
 	FTimerHandle TimerHandle;
-
+	
 	GetWorld()->GetTimerManager().SetTimer(
-		TimerHandle,
-		this,
-		&ASnakeGameMode::RestartGame,
-		1.5f, //The timer
-		false
-	);
+	TimerHandle,
+	this,
+	&ASnakeGameMode::FinalScore,
+	1.5f, //The timer
+	false
+);
+	
+	// GetWorld()->GetTimerManager().SetTimer(
+	// 	TimerHandle,
+	// 	this,
+	// 	&ASnakeGameMode::RestartGame,
+	// 	1.5f, //The timer
+	// 	false
+	// );
 }
 
 void ASnakeGameMode::RestartGame()
@@ -234,6 +271,37 @@ void ASnakeGameMode::IncreaseScore()
 
 void ASnakeGameMode::FinalScore()
 {
+	UE_LOG(LogTemp, Warning, TEXT("FinalScore() Called"));
+	
+	if (ScoreWidget)
+	{
+		ScoreWidget->RemoveFromParent();
+	}
+	
+	if (FinalScoreWidgetClass)
+	{
+		FinalScoreWidget = CreateWidget<UFinalScoreWidget>(GetWorld()->GetFirstPlayerController(), FinalScoreWidgetClass);
+		
+		UE_LOG(LogTemp, Warning, TEXT("FinalScoreWidget created: %s"), FinalScoreWidget ? TEXT("YES") : TEXT("NO"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("FinalScoreWidgetClass is NULL"));
+	}
+	
+	if (FinalScoreWidget)
+	{
+		FinalScoreWidget->AddToViewport();
+		FinalScoreWidget->SetFinalScore(Score);
+		UE_LOG(LogTemp, Warning, TEXT("FinalScoreWidget added to viewport"));
+	}
+	
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (PC)
+	{
+		PC->SetShowMouseCursor(true);
+		PC->SetInputMode(FInputModeGameOnly());
+	}
 	
 }
 

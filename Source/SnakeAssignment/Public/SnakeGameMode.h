@@ -24,6 +24,7 @@ class ULevelDataAsset;
 class AGridManager;
 class ASnakePawn;
 class UScoreWidget;
+class UFinalScoreWidget;
 
 
 UCLASS()
@@ -50,6 +51,13 @@ public:
 	
 	UPROPERTY(BlueprintReadOnly, Category="UI")
 	UScoreWidget* ScoreWidget = nullptr;
+	
+	//Game over Score
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<UFinalScoreWidget> FinalScoreWidgetClass;
+	
+	UPROPERTY(BlueprintReadOnly, Category = "UI")
+	UFinalScoreWidget* FinalScoreWidget = nullptr;
 	
 	virtual void BeginPlay() override;
 	
@@ -104,6 +112,9 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category ="Game")
 	void FinalScore();
+	
+	UFUNCTION(BlueprintCallable, Category ="Game")
+	void EnterMainMenu();
 	
 private:
 	EGameState CurrentGameState;
