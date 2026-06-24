@@ -8,6 +8,7 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
+#include "InputMappingContext.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubSystems.h"
 
@@ -85,20 +86,27 @@ void ASnakePawn::BeginPlay()
                 UE_LOG(LogTemp, Warning, TEXT("PlayerIndex: was 0"));
             }
         }
-        else
+        else if (PlayerIndex == 1)
         {
-            GridPosition = FIntPoint(
-        GridManager->GridWidth / 2,
-        GridManager->GridHeight / 2
-            );
-            UE_LOG(LogTemp, Warning, TEXT("Player2 was enabled!!!"));
-            EnableGame();
+            GridPosition = FIntPoint(GridManager->GridWidth / 2, GridManager->GridHeight / 2);
+
+            // P2 gets its own IMC
+            UEnhancedInputLocalPlayerSubsystem* Subsystem =
+                ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
+            
+            UE_LOG(LogTemp, Warning, TEXT("SnakeMappingContext_P2 = %s"),
+                SnakeMappingContext_P2 ? *SnakeMappingContext_P2->GetName() : TEXT("NULL"));
+            
+            if (Subsystem)
+            {
+                Subsystem->AddMappingContext(SnakeMappingContext_P2, 0);
+            }
         }
     }
 
     SnakeBody.Add(GridPosition);
 
-    //Marks starting cell as occupied
+    //Marks starting cell as occupied, maybe need to sort this out to work in multiplayer... Or not...
     GridManager->SetCellOccupied(GridPosition.X, GridPosition.Y, true);
 
     Direction = FIntPoint(1, 0);
@@ -123,34 +131,20 @@ void ASnakePawn::Tick(float DeltaTime)
 void ASnakePawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
-    
-    APlayerController* PlayerController = Cast<APlayerController>(GetController());
-    
-    if (!PlayerController) return;
-    
-    ULocalPlayer* LocalPlayer = PlayerController->GetLocalPlayer();
-    
-    if (LocalPlayer)
-    {
-        int32 PlayerIndex = GetGameInstance()->GetLocalPlayers().IndexOfByKey(LocalPlayer);
-        
-        if (PlayerIndex == 1)
-        {
-            return;
-        }
-    }
-    
+
+    UE_LOG(LogTemp, Warning, TEXT("SetupPlayerInputComponent called on %s"), *GetName());
+
     UEnhancedInputComponent* Input = Cast<UEnhancedInputComponent>(PlayerInputComponent);
-    
     if (Input)
     {
         Input->BindAction(MoveUpAction, ETriggerEvent::Started, this, &ASnakePawn::MoveUp);
         Input->BindAction(MoveDownAction, ETriggerEvent::Started, this, &ASnakePawn::MoveDown);
         Input->BindAction(MoveLeftAction, ETriggerEvent::Started, this, &ASnakePawn::MoveLeft);
         Input->BindAction(MoveRightAction, ETriggerEvent::Started, this, &ASnakePawn::MoveRight);
-        
-        //2
-        Input->BindAction(MoveRightAction_2, ETriggerEvent::Started, this, &ASnakePawn::MoveRight_2);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("SetupPlayerInputComponent: Input cast failed on %s"), *GetName());
     }
 }
 
@@ -170,12 +164,14 @@ bool ASnakePawn::IsOppositeDirection(FIntPoint NewDir) const
 //later when/if time is there.)
 void ASnakePawn::MoveUp()
 {
+    UE_LOG(LogTemp, Warning, TEXT("MoveUp called on %s"), *GetName());
+    
     if (!bGameStarted) return; //No movement unless game started.
     
     //Direction = FIntPoint(0, 1);
     //Direction = FIntPoint(1, 0); //SpecialSolution
     
-    //Making sure I cant turn back into the snake
+    //Making sure I cant turn back into the snake(small bug, fix if time is there)
     FIntPoint NewDir = FIntPoint (1,0);
     
     if (!IsOppositeDirection(NewDir))
@@ -187,12 +183,14 @@ void ASnakePawn::MoveUp()
 
 void ASnakePawn::MoveDown()
 {
+    
+    UE_LOG(LogTemp, Warning, TEXT("MoveDown called on %s"), *GetName());
     if (!bGameStarted) return; //No movement unless game started.
     
     //Direction = FIntPoint(0, -1);
     //Direction = FIntPoint(-1, 0); //SpecialSolution
     
-    //Making sure I cant turn back into the snake
+    //Making sure I cant turn back into the snake(small bug, fix if time is there)
     FIntPoint NewDir = FIntPoint (-1, 0);
     
     if (!IsOppositeDirection(NewDir))
@@ -203,12 +201,14 @@ void ASnakePawn::MoveDown()
 
 void ASnakePawn::MoveLeft()
 {
+    
+    UE_LOG(LogTemp, Warning, TEXT("MoveLeft called on %s"), *GetName());
     if (!bGameStarted) return; //No movement unless game started.
     
     //Direction = FIntPoint(-1, 0);
     //Direction = FIntPoint(0, -1); //SpecialSolution
     
-    //Making sure I cant turn back into the snake
+    //Making sure I cant turn back into the snake(small bug, fix if time is there)
     FIntPoint NewDir = FIntPoint (0, -1);
     
     if (!IsOppositeDirection(NewDir))
@@ -219,12 +219,14 @@ void ASnakePawn::MoveLeft()
 
 void ASnakePawn::MoveRight()
  {
+    
+    UE_LOG(LogTemp, Warning, TEXT("MoveRight called on %s"), *GetName());
      if (!bGameStarted) return; //No movement unless game started.
      
      //Direction = FIntPoint(1, 0);
      //Direction = FIntPoint(0, 1); //SpecialSolution
      
-     //Making sure I cant turn back into the snake
+    //Making sure I cant turn back into the snake(small bug, fix if time is there)
      FIntPoint NewDir = FIntPoint(0, 1);
      
      if (!IsOppositeDirection(NewDir))
@@ -233,37 +235,7 @@ void ASnakePawn::MoveRight()
      }
  }
 
-void ASnakePawn::MoveRight_2()
-{
-    if (!bGameStarted) return; //No movement unless game started.
-    
-//     APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 1);
-//
-//     if (PC)
-//     {
-//         APawn* Pawn = PC->GetPawn();
-//
-//         if (Pawn)
-//         {
-//             ASnakePawn* SnakePawn = Cast<ASnakePawn>(Pawn);
-//             
-//             SnakePawn->MoveRight();
-//         }
-//     }
-//     //Direction = FIntPoint(1, 0);
-//     //Direction = FIntPoint(0, 1); //SpecialSolution
-//     
-//     //Making sure I cant turn back into the snake
-//     // FIntPoint NewDir = FIntPoint(0, 1);
-//     
-//     // if (!IsOppositeDirection(NewDir))
-//     // {
-//     //     Direction = NewDir;
-//     // }
-}
-
 // Movement
-
 void ASnakePawn::MoveSnake()
 {    
     

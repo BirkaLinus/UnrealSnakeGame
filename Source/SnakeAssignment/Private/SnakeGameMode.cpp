@@ -31,30 +31,31 @@ void ASnakeGameMode::SetGameState(EGameState NewState)
 void ASnakeGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	SetGameState(EGameState::MainMenu);
-	
+
 	GridManagerRef = Cast<AGridManager>(
-	UGameplayStatics::GetActorOfClass(GetWorld(), AGridManager::StaticClass())
-);
+		UGameplayStatics::GetActorOfClass(GetWorld(), AGridManager::StaticClass())
+	);
 	
+	//Spawn snake2 and destroy it if not multiplayer, random fix IDK..
+	Player2Controller = UGameplayStatics::CreatePlayer(GetWorld(), 1, true);
+
 	if (MainMenuWidgetClass)
 	{
 		CurrentWidget = CreateWidget<UUserWidget>(GetWorld(), MainMenuWidgetClass);
-		
 		if (CurrentWidget)
 		{
 			CurrentWidget->AddToViewport();
 		}
 	}
-	
+
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
 	if (PC)
 	{
 		PC->SetShowMouseCursor(true);
 		PC->SetInputMode(FInputModeUIOnly());
 	}
-	
 }
 
 void ASnakeGameMode::ToggleTwoPlayers()
@@ -64,66 +65,35 @@ void ASnakeGameMode::ToggleTwoPlayers()
 	UE_LOG(LogTemp, Warning, TEXT("TwoPlaters : %s"), bTwoPlayers ? TEXT("TRUE") : TEXT("FALSE"));
 }
 
-void ASnakeGameMode::StartGame() //REMEMBER TO FIX VOID QUITGAME AND LINK IT IN THE BP WIDGET
+void ASnakeGameMode::StartGame()
 {
 	SetGameState(EGameState::Playing);
-	
-	UE_LOG(LogTemp, Warning,
-	TEXT("StartGame called. bTwoPlayers = %s"),
-	bTwoPlayers ? TEXT("TRUE") : TEXT("FALSE"));
-	
-	//Check how many players
-	
-	//---------DOESNT WORK FOR NOW-----------
-	
-	// if (bTwoPlayers)
-	// {
-	// 	UGameplayStatics::CreatePlayer(GetWorld(), 1, true);
-	// }
-	
-	//---------DOESNT WORK FOR NOW-----------
-	
-	UE_LOG(LogTemp, Warning,
-	TEXT("Two Players = %s"),
-	bTwoPlayers ? TEXT("TRUE") : TEXT("FALSE"));
-	
-	//Remove the MainMenu UI
+
+	UE_LOG(LogTemp, Warning, TEXT("StartGame called. bTwoPlayers = %s"),
+		bTwoPlayers ? TEXT("TRUE") : TEXT("FALSE"));
+
 	if (CurrentWidget)
 	{
 		CurrentWidget->RemoveFromParent();
 	}
-	
+
 	if (ScoreWidgetClass)
 	{
 		ScoreWidget = CreateWidget<UScoreWidget>(
 			GetWorld()->GetFirstPlayerController(),
 			ScoreWidgetClass
 		);
-		
-		UE_LOG(LogTemp, Warning, TEXT("ScoreWidget created: %s"),
-	ScoreWidget ? TEXT("YES") : TEXT("NO"));
 
 		if (ScoreWidget)
 		{
 			ScoreWidget->AddToViewport();
-			UE_LOG(LogTemp, Warning, TEXT("WIDGET ADDED"));
 		}
 		else
 		{
 			UE_LOG(LogTemp, Error, TEXT("WIDGET FAILED TO CREATE"));
 		}
-		
-		if (!ScoreWidgetClass)
-		{
-			UE_LOG(LogTemp, Error, TEXT("ScoreWidgetClass is NULL"));
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("ScoreWidgetClass is VALID"));
-		}
 	}
-	
-	//Gameplay Logic instead
+
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
 	if (PC)
 	{
@@ -131,36 +101,57 @@ void ASnakeGameMode::StartGame() //REMEMBER TO FIX VOID QUITGAME AND LINK IT IN 
 		PC->SetInputMode(FInputModeGameOnly());
 	}
 	
-	 ASnakePawn* Pawn = Cast<ASnakePawn>(UGameplayStatics::GetPlayerPawn(this, 0));
-	
-	 if (bTwoPlayers && SnakePawnClass)
-	 {
-	 	UE_LOG(LogTemp, Warning, TEXT("Trying to spawn Snake2"));
-	
-	 	 APlayerController* SecondPC=UGameplayStatics::CreatePlayer(GetWorld(), 1, true);
-	 	
-	 	Snake2 = GetWorld()->SpawnActor<ASnakePawn>(
-	 		SnakePawnClass,
-	 		FVector(2500.f, 0.f, 0.f),
-	 		FRotator::ZeroRotator
-	 	);
-	
-	 	UE_LOG(LogTemp, Warning,
-	 		TEXT("Snake2 pointer = %s"),
-	 		Snake2 ? TEXT("VALID") : TEXT("NULL"));
-	
-	 	if (Snake2)
-	 	{
-	 		SecondPC->Possess(Snake2);
-	 		UE_LOG(LogTemp, Warning, TEXT("Spawned Snake2"));
-	 		Snake2->EnableGame();
-	 	}
-	}
-	
+	Snake2 = Player2Controller ? Cast<ASnakePawn>(Player2Controller->GetPawn()) : nullptr;
+
+	//Place to destroy the secondsnake if its not multiplayer.
+	DestroyUnneededSecondSnake();
+
+	ASnakePawn* Pawn = Cast<ASnakePawn>(UGameplayStatics::GetPlayerPawn(this, 0));
 	if (Pawn)
 	{
 		Pawn->EnableGame();
 	}
+
+	if (bTwoPlayers && Snake2)
+	{
+		Snake2->EnableGame();
+	}
+}
+
+void ASnakeGameMode::DestroyUnneededSecondSnake()
+{
+	if (bTwoPlayers)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("DestroyUnneededSecondSnake: bTwoPlayers TRUE, skipping"));
+		return;
+	}
+
+	ASnakePawn* P2Pawn = Player2Controller
+		? Cast<ASnakePawn>(Player2Controller->GetPawn())
+		: nullptr;
+
+	if (P2Pawn)
+	{
+		//Remove the occupied cells of snake2 (fixed bug with "invisible snake" in the center.
+		if (GridManagerRef)
+		{
+			for (const FIntPoint& Cell : P2Pawn->GetSnakeBody())
+			{
+				GridManagerRef->SetCellOccupied(Cell.X, Cell.Y, false);
+			}
+		}
+
+		for (AActor* Segment : P2Pawn->GetSnakeSegments())
+		{
+			if (Segment)
+			{
+				Segment->Destroy();
+			}
+		}
+		P2Pawn->Destroy();
+	}
+
+	Snake2 = nullptr;
 }
 
 void ASnakeGameMode::GameOver()

@@ -33,7 +33,9 @@ class SNAKEASSIGNMENT_API ASnakeGameMode : public AGameModeBase
 	
 public:
 	
-
+	UPROPERTY()
+	APlayerController* Player2Controller = nullptr;
+	
 	UPROPERTY()
 	ASnakePawn* Snake2;
 	
@@ -112,4 +114,6 @@ private:
 	UUserWidget* CurrentWidget;
 	
 	int Score = 0;
+	
+	void DestroyUnneededSecondSnake();
 };

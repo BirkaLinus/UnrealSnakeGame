@@ -22,7 +22,10 @@ class ASnakePawn : public APawn
 
 public:
     ASnakePawn();
-
+    
+    const TArray<AActor*>& GetSnakeSegments() const { return SnakeSegments; }
+    const TArray<FIntPoint>& GetSnakeBody() const { return SnakeBody; }
+    
 protected:
     virtual void BeginPlay() override;
 
@@ -74,7 +77,7 @@ private:
     UInputAction* MoveRightAction;
     
     UPROPERTY(EditAnywhere, Category = "Input")
-    UInputAction* MoveRightAction_2;
+    UInputMappingContext* SnakeMappingContext_P2;
     
     //VOIDS
     
@@ -88,9 +91,6 @@ private:
     void MoveDown();
     void MoveLeft();
     void MoveRight();
-    
-    //Player2
-    void MoveRight_2();
     
     void UpdateVisuals(FIntPoint PreviousTail, bool bGrew);
     
