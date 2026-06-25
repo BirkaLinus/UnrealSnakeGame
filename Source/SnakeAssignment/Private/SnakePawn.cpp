@@ -5,6 +5,9 @@
 #include "SnakeGameMode.h"
 #include "Kismet/GameplayStatics.h"
 
+#include "Components/BoxComponent.h"
+
+
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
@@ -18,10 +21,17 @@ ASnakePawn::ASnakePawn()
 {
     PrimaryActorTick.bCanEverTick = true;
     // AutoPossessPlayer = EAutoReceiveInput::Player0;
+
+    RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+    
+    HeadCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("HeadCollision"));
+    HeadCollision->SetupAttachment(RootComponent);
+    HeadCollision->SetBoxExtent(FVector(10, 10, 10));
+    HeadCollision->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+    HeadCollision->SetGenerateOverlapEvents(true);
     
     //Camera
     //Create SpringArm
-    RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
     SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
     SpringArm->SetupAttachment(RootComponent);
     
@@ -284,7 +294,12 @@ void ASnakePawn::MoveSnake()
     }
     
     //FOOD
-    bool bAteFood = GridManager->IsFoodAtPosition(NewHead);
+    bool bAteFood = bPendingFoodEaten; //Eats the food and put it to false straight away and unr the logics for eating straight after...
+    bPendingFoodEaten = false;
+    
+    
+    //GAMLA SÄTTET
+    // bool bAteFood = GridManager->IsFoodAtPosition(NewHead);
     
     //SELFCOLLIDE
     bool bIsOccupied = GridManager->IsCellOccupied(NewHead.X, NewHead.Y);
@@ -310,14 +325,14 @@ void ASnakePawn::MoveSnake()
     if (bAteFood)
     {
         UE_LOG(LogTemp, Warning, TEXT("Food eaten"));
-
+    
         GridManager->SpawnFood();
-
+    
         if (ASnakeGameMode* GM =
             Cast<ASnakeGameMode>(UGameplayStatics::GetGameMode(this)))
         {
             UE_LOG(LogTemp, Warning, TEXT("Found GameMode"));
-
+    
             GM->IncreaseScore();
         }
         else
@@ -424,6 +439,9 @@ void ASnakePawn::Die()
         GM->GameOver(); //Calls the GameOver in GM.
     }
     SetActorTickEnabled(false);
-    
-    
+}
+
+void ASnakePawn::NotifyFoodEaten(AActor* EatenFood)
+{
+    bPendingFoodEaten = true;
 }

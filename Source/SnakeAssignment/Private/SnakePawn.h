@@ -31,6 +31,14 @@ public:
     virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
     
     void EnableGame();
+    
+    UFUNCTION()
+    void NotifyFoodEaten(AActor* EatenFood);
+    
+    bool bPendingFoodEaten = false;
+    
+    UPROPERTY(VisibleAnywhere)
+    class UBoxComponent* HeadCollision;
 
 private:
     //GRID/POSITION
