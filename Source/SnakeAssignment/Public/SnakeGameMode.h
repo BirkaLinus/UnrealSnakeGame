@@ -123,4 +123,5 @@ private:
 	UUserWidget* CurrentWidget;
 	
 	int Score = 0;
+	int EndScore = 0;
 };

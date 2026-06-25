@@ -291,8 +291,9 @@ void ASnakeGameMode::FinalScore()
 	
 	if (FinalScoreWidget)
 	{
+		EndScore = Score;
 		FinalScoreWidget->AddToViewport();
-		FinalScoreWidget->SetFinalScore(Score);
+		FinalScoreWidget->SetFinalScore(EndScore);
 		UE_LOG(LogTemp, Warning, TEXT("FinalScoreWidget added to viewport"));
 	}
 	
